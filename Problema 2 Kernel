@@ -1,0 +1,44 @@
+#include <iostream>
+#include <unistd.h>
+#include <cstdlib>
+#include <sys/syscall.h>
+#include <errno.h>
+#include <cstring>
+#include <vector>
+
+#define __NR_my_syscall 440
+
+int main(int argc, char *argv[]) {
+    if (argc < 3) {
+        std::cerr << "Uso: " << argv[0] << " v1 v2" << std::endl;
+        return 1;
+    }
+
+    std::vector<int> vector1;
+    std::vector<int> vector2;
+
+    // Convertir los argumentos de cadena a enteros
+    for (int i = 1; i < argc; ++i) {
+        char *token = strtok(argv[i], ",");
+        while (token != NULL) {
+            if (i == 1) {
+                vector1.push_back(std::atoi(token));
+            } else {
+                vector2.push_back(std::atoi(token));
+            }
+            token = strtok(NULL, ",");
+        }
+    }
+
+    // Llamada a la syscall my_syscall
+    int resultado;
+    long int ret = syscall(__NR_my_syscall, &resultado, vector1.data(), vector2.data(), vector1.size(), vector2.size());
+
+    if (ret == 0) {
+        std::cout << "Resultado del producto escalar: " << resultado << std::endl;
+    } else {
+        std::cerr << "Error al llamar a la syscall my_syscall: " << strerror(errno) << std::endl;
+    }
+
+    return 0;
+}
