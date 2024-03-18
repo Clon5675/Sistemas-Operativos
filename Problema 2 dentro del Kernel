@@ -1,0 +1,28 @@
+#include <linux/kernel.h>
+#include <linux/syscalls.h>
+#include <linux/uaccess.h>
+
+SYSCALL_DEFINE5(prblema2, int *, resultado, int *, vector1, int *, vector2, int,
+                len_v1, int, len_v2) {
+  if (len_v1 != len_v2) {
+    *resultado = -1;
+    return false;
+  }
+
+  int producto = 0;
+  int tmp1, tmp2;
+
+  for (int i = 0; i < len_v1; i++) {
+    if (copy_from_user(&tmp1, &vector1[i], sizeof(int)) ||
+        copy_from_user(&tmp2, &vector2[i], sizeof(int))) {
+      return -EFAULT;
+    }
+    producto += tmp1 * tmp2;
+  }
+
+  if (copy_to_user(resultado, &producto, sizeof(int))) {
+    return -EFAULT;
+  }
+
+  return true;
+}
